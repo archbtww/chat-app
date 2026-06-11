@@ -43,8 +43,6 @@ export class Server {
     const url = new URL(req.url);
 
     switch (url.pathname) {
-      case "/register":
-      case "/login":
       case "/chat":
         return this.getPage(url.pathname + ".html");
       case "/reg":
@@ -62,7 +60,6 @@ export class Server {
   };
 
   async getPage(path: string) {
-    console.log(path);
     const file = Bun.file(`static${path}`);
 
     if (!(await file.exists())) {
@@ -215,12 +212,9 @@ export class Server {
       return;
     }
 
-    console.log(data);
-
     switch (data.type) {
       case 0: // get conversation
         const messages = this.db.getMessages(username, data.conversation);
-        console.log(messages);
         ws.send(JSON.stringify(messages));
         break;
 
@@ -236,18 +230,10 @@ export class Server {
         }
 
         if (targetUser) {
-          targetUser.send(
-            JSON.stringify([
-              {
-                from_username: username,
-                message: trimmedMessage,
-              },
-            ]),
-          );
+          const message = this.db.insertMessage(username, data.to, trimmedMessage);
+          console.log(message);
+          targetUser.send(JSON.stringify(message));
         }
-
-        this.db.insertMessage(username, data.to, trimmedMessage);
-        console.log(`Message from ${username} to ${data.to}: ${data.message} `);
 
         break;
     }

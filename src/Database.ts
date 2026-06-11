@@ -44,7 +44,9 @@ export class DB {
     const query = this.db.prepare(
       "INSERT INTO messages (from_username, to_username, message) VALUES (?, ?, ?)",
     );
-    query.run(fromUsername, toUsername, message);
+    const result = query.run(fromUsername, toUsername, message);
+
+    return this.db.query("SELECT * FROM messages WHERE id = ?").get(result.lastInsertRowid);
   }
 
   getConversations(fromUsername: string) {

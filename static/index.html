@@ -6,9 +6,14 @@
     <title>Chat</title>
   </head>
   <body>
-    <div id="links">
-      <a href="register">Register</a>
-      <a href="login">Login</a>
+    <div id="loginScreen">
+      <input id="username" placeholder="Username" />
+      <input id="password" placeholder="Password" type="password" />
+      <button id="loginButton">Login</button>
+      <button id="registerButton">Register</button>
+      <p id="loginError" hidden>Login failed</p>
+      <p id="registerError" hidden>Registration failed</p>
     </div>
   </body>
+  <script src="app.js"></script>
 </html>
