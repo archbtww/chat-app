@@ -230,9 +230,12 @@ export class Server {
         }
 
         if (targetUser) {
-          const message = this.db.insertMessage(username, data.to, trimmedMessage);
-          console.log(message);
-          targetUser.send(JSON.stringify(message));
+          const message = this.db.insertMessage(
+            username,
+            data.to,
+            trimmedMessage,
+          );
+          targetUser.send(JSON.stringify([message]));
         }
 
         break;

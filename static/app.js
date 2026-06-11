@@ -1,8 +1,5 @@
 "use strict";
 
-document.getElementById("loginButton").addEventListener("click", login);
-document.getElementById("registerButton").addEventListener("click", register);
-
 function register() {
   const username = document.getElementById("username").value;
   const password = document.getElementById("password").value;
@@ -23,6 +20,9 @@ function register() {
 function login() {
   const username = document.getElementById("username").value;
   const password = document.getElementById("password").value;
+
+  window.sessionStorage.setItem("username", username);
+
   fetch("/log", {
     method: "POST",
     headers: {
@@ -40,6 +40,8 @@ function login() {
     }
   });
 }
+
+const username = window.sessionStorage.getItem("username");
 
 let socket;
 
@@ -105,11 +107,13 @@ function connectSocket(token) {
     } else {
       for (let message of data) {
         const messageElement = document.createElement("p");
+        const user =
+          message.from_username === username
+            ? message.to_username
+            : message.from_username;
         messageElement.innerText =
           message.from_username + ": " + message.message;
-        const conversation =
-          conversations.get(message.from_username) ??
-          new Conversation(message.from_username);
+        const conversation = conversations.get(user) ?? new Conversation(user);
         if (!conversation.messages.has(message.id)) {
           conversation.messages.set(
             message.id,

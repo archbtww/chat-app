@@ -46,14 +46,23 @@ export class DB {
     );
     const result = query.run(fromUsername, toUsername, message);
 
-    return this.db.query("SELECT * FROM messages WHERE id = ?").get(result.lastInsertRowid);
+    return this.db
+      .query("SELECT * FROM messages WHERE id = ?")
+      .get(result.lastInsertRowid);
   }
 
   getConversations(fromUsername: string) {
-    const query = this.db.prepare(
-      "SELECT DISTINCT to_username FROM messages WHERE from_username = ? OR to_username = ? ORDER BY timestamp ASC",
-    );
-    return query.all(fromUsername, fromUsername);
+    const query = this.db.prepare(`
+    SELECT DISTINCT
+      CASE
+        WHEN from_username = ? THEN to_username
+        ELSE from_username
+      END AS to_username
+    FROM messages
+    WHERE from_username = ? OR to_username = ?
+    ORDER BY timestamp DESC
+  `);
+    return query.all(fromUsername, fromUsername, fromUsername);
   }
 
   getMessages(user1: string, user2: string) {
