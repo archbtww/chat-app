@@ -65,9 +65,8 @@ function connectSocket(token) {
   socket.addEventListener("message", (event) => {
     const data = JSON.parse(event.data);
     if (data.type === "conversations") {
-      const conversations = data.conversations;
-      conversations.forEach((conversation) => {
-        const conv = new Conversation(conversation);
+      data.conversations.forEach((conversation) => {
+        new Conversation(conversation);
       });
     } else {
       for (let message of data) {
@@ -109,10 +108,6 @@ function sendMessage() {
   messageElement.innerText = `You: ${message}`;
 
   const toUsername = currentChat.user;
-  let conversation =
-    conversations.get(toUsername) ?? new Conversation(toUsername);
-  conversation.div.appendChild(messageElement);
-  conversation.scroll();
 
   socket.send(JSON.stringify({ type: 1, to: toUsername, message: message }));
 
@@ -127,6 +122,14 @@ document.getElementById("messageInput").addEventListener("keydown", (e) => {
 
 document.getElementById("sendButton").addEventListener("click", () => {
   sendMessage();
+});
+
+document.getElementById("newChatButton").addEventListener("click", () => {
+  const input = document.getElementById("newChatInput");
+  const name = input.value.trim();
+  if (!name) return;
+  new Conversation(input.value);
+  input.value = "";
 });
 
 const token = window.sessionStorage.getItem("token");

@@ -229,14 +229,16 @@ export class Server {
           return;
         }
 
+        const message = this.db.insertMessage(
+          username,
+          data.to,
+          trimmedMessage,
+        );
+
         if (targetUser) {
-          const message = this.db.insertMessage(
-            username,
-            data.to,
-            trimmedMessage,
-          );
           targetUser.send(JSON.stringify([message]));
         }
+        ws.send(JSON.stringify([message]));
 
         break;
     }
