@@ -1,50 +1,8 @@
 "use strict";
 
-function register() {
-  const username = document.getElementById("username").value;
-  const password = document.getElementById("password").value;
-  fetch("/reg", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ username, password }),
-  }).then((response) => {
-    if (response.status === 200) {
-      window.location.reload();
-    } else {
-      document.getElementById("registerError").hidden = false;
-    }
-  });
-}
-function login() {
-  const username = document.getElementById("username").value;
-  const password = document.getElementById("password").value;
-
-  window.sessionStorage.setItem("username", username);
-
-  fetch("/log", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ username, password }),
-  }).then((response) => {
-    if (response.status === 200) {
-      response.json().then((data) => {
-        window.sessionStorage.setItem("token", data.token);
-        window.location.pathname = "/chat";
-      });
-    } else {
-      document.getElementById("loginError").hidden = false;
-    }
-  });
-}
-
 const username = window.sessionStorage.getItem("username");
 
 let socket;
-
 let currentChat;
 
 const conversations = new Map();
@@ -64,6 +22,8 @@ class Conversation {
       this.show();
       currentChat = this;
 
+      document.getElementById("currentChat").innerText = this.user;
+
       socket.send(JSON.stringify({ type: 0, conversation: this.user }));
     });
 
@@ -77,12 +37,17 @@ class Conversation {
 
   hide() {
     this.div.hidden = true;
-    this.btn.style.color = "";
+    this.btn.style["font-weight"] = "normal";
   }
 
   show() {
     this.div.hidden = false;
-    this.btn.style.color = "#22ff99";
+    this.btn.style["font-weight"] = "bold";
+  }
+
+  scroll() {
+    const messagesDiv = document.getElementById("messages");
+    messagesDiv.scrollTo(0, messagesDiv.scrollHeight);
   }
 }
 
@@ -112,7 +77,9 @@ function connectSocket(token) {
             ? message.to_username
             : message.from_username;
         messageElement.innerText =
-          message.from_username + ": " + message.message;
+          (message.from_username === username ? "You" : message.from_username) +
+          ": " +
+          message.message;
         const conversation = conversations.get(user) ?? new Conversation(user);
         if (!conversation.messages.has(message.id)) {
           conversation.messages.set(
@@ -125,16 +92,46 @@ function connectSocket(token) {
             ),
           );
           conversation.div.appendChild(messageElement);
+          conversation.scroll();
         }
       }
     }
   });
 }
-function sendMessage(socket, toUsername, message) {
+function sendMessage() {
+  if (!currentChat) return;
+
+  const input = document.getElementById("messageInput");
+  const message = input.value.trim();
+  if (!message) return;
+
   const messageElement = document.createElement("p");
   messageElement.innerText = `You: ${message}`;
+
+  const toUsername = currentChat.user;
   let conversation =
     conversations.get(toUsername) ?? new Conversation(toUsername);
   conversation.div.appendChild(messageElement);
+  conversation.scroll();
+
   socket.send(JSON.stringify({ type: 1, to: toUsername, message: message }));
+
+  input.value = "";
+}
+
+document.getElementById("messageInput").addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    sendMessage();
+  }
+});
+
+document.getElementById("sendButton").addEventListener("click", () => {
+  sendMessage();
+});
+
+const token = window.sessionStorage.getItem("token");
+if (token) {
+  connectSocket(token);
+} else {
+  window.location.pathname = "/login";
 }

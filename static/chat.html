@@ -2,29 +2,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="main.css" />
   <title>Chat</title>
 </head>
 <body>
   <div id="chatScreen">
-    <input id="targetInput" placeholder="Send to" />
-    <input id="messageInput" placeholder="Message" />
-    <button id="sendButton">Send</button>
-    <div id="conversations"></div>
-    <div id="messages"></div>
+    <div id="leftOfChat">
+      <div id="conversations"></div>
+    </div>
+    <div id="chatDiv">
+      <p id="currentChat"></p>
+      <div id="messages"></div>
+      <div id="inputs">
+        <input id="messageInput" placeholder="Message" />
+        <button id="sendButton">Send</button>
+      </div>
+    </div>
   </div>
   <script src="app.js"></script>
-  <script>
-    document.getElementById("sendButton").addEventListener("click", () => {
-      const toUsername = document.getElementById("targetInput").value;
-      const message = document.getElementById("messageInput").value;
-      sendMessage(socket, toUsername, message);
-    });
-
-    const token = window.sessionStorage.getItem("token");
-    if (token) {
-      connectSocket(token);
-    } else {
-      window.location.pathname = "/login";
-    }
-  </script>
 </body>

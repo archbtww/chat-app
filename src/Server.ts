@@ -45,9 +45,9 @@ export class Server {
     switch (url.pathname) {
       case "/chat":
         return this.getPage(url.pathname + ".html");
-      case "/reg":
+      case "/register":
         return this.handleRegister(req);
-      case "/log":
+      case "/login":
         return this.handleLogin(req);
       case "/ws":
         return this.handleWS(req, server);

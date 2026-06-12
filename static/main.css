@@ -1,0 +1,87 @@
+body {
+  margin: 0;
+  justify-content: center;
+  align-items: center;
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+#authScreen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+#authScreen input {
+  padding: 8px;
+  width: 200px;
+}
+
+#authButtons {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+}
+
+#authButtons button {
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+#chatScreen {
+  display: flex;
+  width: 100%;
+  height: 100%;
+}
+
+#leftOfChat {
+  display: flex;
+  width: 250px;
+  flex-direction: column;
+  border-right: 2px solid;
+}
+
+#conversations {
+  display: flex;
+  flex-direction: column;
+}
+
+#conversations button {
+  flex: 1;
+}
+
+#chatDiv {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+#currentChat {
+  height: 20px;
+  margin: 0;
+  padding: 10px;
+  border-bottom: 1px solid;
+}
+
+#messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+}
+
+#inputs {
+  display: flex;
+  border-top: 1px solid;
+  flex-direction: row;
+  padding: 10px;
+}
+
+#messageInput {
+  flex: 1;
+  min-width: 0;
+  padding: 8px;
+}
