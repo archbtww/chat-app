@@ -5,6 +5,8 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
+  display: flex;
+  flex-direction: column;
 }
 
 #authScreen {
@@ -13,6 +15,9 @@ body {
   align-items: center;
   justify-content: center;
   gap: 10px;
+  border: 2px solid;
+  padding: 20px;
+  border-radius: 8px;
 }
 
 #authScreen input {
@@ -28,6 +33,10 @@ body {
 
 #authButtons button {
   padding: 8px 12px;
+}
+
+#authError {
+  color: #f00;
 }
 
 #chatScreen {
@@ -53,13 +62,21 @@ body {
 
 #conversations button {
   padding: 10px;
+  border: none;
 }
 
 #newChat {
+  height: 20px;
   display: flex;
   flex-direction: row;
   padding: 10px;
   border-top: 1px solid;
+}
+
+#newChatInput {
+  flex: 1;
+}
+#newChatButton {
 }
 
 #chatDiv {
@@ -93,6 +110,10 @@ body {
   flex: 1;
   min-width: 0;
   padding: 8px;
+}
+
+#sendButton {
+  border-style: solid;
 }
 
 button {

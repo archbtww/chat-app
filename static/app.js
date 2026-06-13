@@ -2,6 +2,8 @@
 
 const username = window.sessionStorage.getItem("username");
 
+const messagesDiv = document.getElementById("messages");
+
 let socket;
 let currentChat;
 
@@ -23,11 +25,16 @@ class Conversation {
       currentChat = this;
 
       document.getElementById("currentChat").innerText = this.user;
+      if (!this.read) {
+        this.btn.innerText = this.btn.innerText.slice(4);
+        this.read = true;
+      }
 
       socket.send(JSON.stringify({ type: 0, conversation: this.user }));
     });
 
     this.messages = new Map();
+    this.read = true;
 
     document.getElementById("conversations").appendChild(this.btn);
     document.getElementById("messages").appendChild(this.div);
@@ -46,7 +53,6 @@ class Conversation {
   }
 
   scroll() {
-    const messagesDiv = document.getElementById("messages");
     messagesDiv.scrollTo(0, messagesDiv.scrollHeight);
   }
 }
@@ -91,7 +97,19 @@ function connectSocket(token) {
             ),
           );
           conversation.div.appendChild(messageElement);
-          conversation.scroll();
+          const atBottom =
+            messagesDiv.scrollHeight - messagesDiv.clientHeight <=
+            messagesDiv.scrollTop + 5;
+          if (atBottom) {
+            conversation.scroll();
+          }
+          if ((conversation.div.hidden || atBottom) && conversation.read) {
+            const atBottom =
+              conversation.div.scrollHeight - conversation.div.clientHeight <=
+              conversation.div.scrollTop + 5;
+            conversation.read = false;
+            conversation.btn.innerText = "* - " + conversation.btn.innerText;
+          }
         }
       }
     }
@@ -104,18 +122,16 @@ function sendMessage() {
   const message = input.value.trim();
   if (!message) return;
 
-  const messageElement = document.createElement("p");
-  messageElement.innerText = `You: ${message}`;
-
   const toUsername = currentChat.user;
+  currentChat.scroll();
 
   socket.send(JSON.stringify({ type: 1, to: toUsername, message: message }));
 
   input.value = "";
 }
 
-document.getElementById("messageInput").addEventListener("keydown", (e) => {
-  if (e.key === "Enter") {
+document.getElementById("messageInput").addEventListener("keydown", (event) => {
+  if (event.key === "Enter") {
     sendMessage();
   }
 });
@@ -128,7 +144,7 @@ document.getElementById("newChatButton").addEventListener("click", () => {
   const input = document.getElementById("newChatInput");
   const name = input.value.trim();
   if (!name) return;
-  new Conversation(input.value);
+  if (!conversations.has(name)) new Conversation(name);
   input.value = "";
 });
 
