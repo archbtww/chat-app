@@ -25,10 +25,7 @@ class Conversation {
       currentChat = this;
 
       document.getElementById("currentChat").innerText = this.user;
-      if (!this.read) {
-        this.btn.innerText = this.btn.innerText.slice(4);
-        this.read = true;
-      }
+      this.markAsRead();
 
       socket.send(JSON.stringify({ type: 0, conversation: this.user }));
     });
@@ -52,6 +49,13 @@ class Conversation {
     this.btn.style["font-weight"] = "bold";
   }
 
+  markAsRead() {
+    if (!this.read) {
+      this.btn.innerText = this.btn.innerText.slice(4);
+      this.read = true;
+    }
+  }
+
   scroll() {
     messagesDiv.scrollTo(0, messagesDiv.scrollHeight);
   }
@@ -64,6 +68,13 @@ class Message {
     this.to = to;
     this.timestamp = timestamp;
   }
+}
+
+function isAtBottom() {
+  return (
+    messagesDiv.scrollHeight - messagesDiv.clientHeight <=
+    messagesDiv.scrollTop + 5
+  );
 }
 
 function connectSocket(token) {
@@ -96,19 +107,15 @@ function connectSocket(token) {
               message.timestamp,
             ),
           );
-          conversation.div.appendChild(messageElement);
-          const atBottom =
-            messagesDiv.scrollHeight - messagesDiv.clientHeight <=
-            messagesDiv.scrollTop + 5;
-          if (atBottom) {
-            conversation.scroll();
-          }
-          if ((conversation.div.hidden || atBottom) && conversation.read) {
-            const atBottom =
-              conversation.div.scrollHeight - conversation.div.clientHeight <=
-              conversation.div.scrollTop + 5;
+          const bottom = isAtBottom();
+          if ((conversation.div.hidden || !bottom) && conversation.read) {
             conversation.read = false;
             conversation.btn.innerText = "* - " + conversation.btn.innerText;
+          }
+          conversation.div.appendChild(messageElement);
+          if (bottom) {
+            conversation.scroll();
+            conversation.read = true;
           }
         }
       }
@@ -148,9 +155,15 @@ document.getElementById("newChatButton").addEventListener("click", () => {
   input.value = "";
 });
 
+messagesDiv.addEventListener("scroll", () => {
+  if (isAtBottom()) {
+    currentChat.markAsRead();
+  }
+});
+
 const token = window.sessionStorage.getItem("token");
-if (token) {
+if (token !== null) {
   connectSocket(token);
 } else {
-  window.location.pathname = "/login";
+  window.location.pathname = "/";
 }
