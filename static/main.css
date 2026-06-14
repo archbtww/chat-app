@@ -65,6 +65,11 @@ body {
   border: none;
 }
 
+#conversations button.active {
+  background: #ccc;
+  font-weight: bold;
+}
+
 #newChat {
   height: 20px;
   display: flex;

@@ -220,6 +220,7 @@ export class Server {
 
       case 1: // send message
         if (!data.to || typeof data.message !== "string") return;
+        if (!this.db.getHashedPassword(data.to)) return;
 
         const targetUser = this.sockets.get(data.to);
 

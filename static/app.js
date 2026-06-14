@@ -1,7 +1,6 @@
 "use strict";
 
 const username = window.sessionStorage.getItem("username");
-
 const messagesDiv = document.getElementById("messages");
 
 let socket;
@@ -14,7 +13,6 @@ class Conversation {
     this.user = user;
 
     this.div = document.createElement("div");
-    this.div.id = "c$" + this.user;
     this.div.hidden = true;
 
     this.btn = document.createElement("button");
@@ -24,13 +22,14 @@ class Conversation {
       this.show();
       currentChat = this;
 
-      document.getElementById("currentChat").innerText = this.user;
       this.markAsRead();
 
       socket.send(JSON.stringify({ type: 0, conversation: this.user }));
+
+      this.scroll();
     });
 
-    this.messages = new Map();
+    this.messages = new Set();
     this.read = true;
 
     document.getElementById("conversations").appendChild(this.btn);
@@ -41,12 +40,14 @@ class Conversation {
 
   hide() {
     this.div.hidden = true;
-    this.btn.style["font-weight"] = "normal";
+    this.btn.classList.remove("active");
   }
 
   show() {
     this.div.hidden = false;
-    this.btn.style["font-weight"] = "bold";
+    this.btn.classList.add("active");
+
+    document.getElementById("currentChat").innerText = this.user;
   }
 
   markAsRead() {
@@ -61,15 +62,6 @@ class Conversation {
   }
 }
 
-class Message {
-  constructor(id, from, to, timestamp) {
-    this.id = id;
-    this.from = from;
-    this.to = to;
-    this.timestamp = timestamp;
-  }
-}
-
 function isAtBottom() {
   return (
     messagesDiv.scrollHeight - messagesDiv.clientHeight <=
@@ -77,14 +69,14 @@ function isAtBottom() {
   );
 }
 
-function connectSocket(token) {
-  socket = new WebSocket(`ws://localhost:3000/ws?token=${token}`);
+function connectSocket(token, ip) {
+  socket = new WebSocket(`ws://${ip}/ws?token=${token}`);
   socket.addEventListener("message", (event) => {
     const data = JSON.parse(event.data);
     if (data.type === "conversations") {
-      data.conversations.forEach((conversation) => {
+      for (let conversation of data.conversations) {
         new Conversation(conversation);
-      });
+      }
     } else {
       for (let message of data) {
         const messageElement = document.createElement("p");
@@ -98,15 +90,7 @@ function connectSocket(token) {
           message.message;
         const conversation = conversations.get(user) ?? new Conversation(user);
         if (!conversation.messages.has(message.id)) {
-          conversation.messages.set(
-            message.id,
-            new Message(
-              message.id,
-              message.from_username,
-              message.to_username,
-              message.timestamp,
-            ),
-          );
+          conversation.messages.add(message.id);
           const bottom = isAtBottom();
           if ((conversation.div.hidden || !bottom) && conversation.read) {
             conversation.read = false;
@@ -115,7 +99,6 @@ function connectSocket(token) {
           conversation.div.appendChild(messageElement);
           if (bottom) {
             conversation.scroll();
-            conversation.read = true;
           }
         }
       }
@@ -130,8 +113,6 @@ function sendMessage() {
   if (!message) return;
 
   const toUsername = currentChat.user;
-  currentChat.scroll();
-
   socket.send(JSON.stringify({ type: 1, to: toUsername, message: message }));
 
   input.value = "";
@@ -163,7 +144,7 @@ messagesDiv.addEventListener("scroll", () => {
 
 const token = window.sessionStorage.getItem("token");
 if (token !== null) {
-  connectSocket(token);
+  connectSocket(token, "localhost:3000");
 } else {
   window.location.pathname = "/";
 }
