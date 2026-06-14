@@ -2,6 +2,7 @@
 
 const username = window.sessionStorage.getItem("username");
 const messagesDiv = document.getElementById("messages");
+const conversationsDiv = document.getElementById("conversations");
 
 let socket;
 let currentChat;
@@ -32,8 +33,8 @@ class Conversation {
     this.messages = new Set();
     this.read = true;
 
-    document.getElementById("conversations").appendChild(this.btn);
-    document.getElementById("messages").appendChild(this.div);
+    conversationsDiv.appendChild(this.btn);
+    messagesDiv.appendChild(this.div);
 
     conversations.set(user, this);
   }
@@ -137,7 +138,7 @@ document.getElementById("newChatButton").addEventListener("click", () => {
 });
 
 messagesDiv.addEventListener("scroll", () => {
-  if (isAtBottom()) {
+  if (currentChat && isAtBottom()) {
     currentChat.markAsRead();
   }
 });
