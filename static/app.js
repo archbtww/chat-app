@@ -129,12 +129,28 @@ document.getElementById("sendButton").addEventListener("click", () => {
   sendMessage();
 });
 
+let newChatButton = document.getElementById("newChatButton");
+let newChatInput = document.getElementById("newChatInput");
+
 document.getElementById("newChatButton").addEventListener("click", () => {
-  const input = document.getElementById("newChatInput");
-  const name = input.value.trim();
-  if (!name) return;
-  if (!conversations.has(name)) new Conversation(name);
-  input.value = "";
+  if (newChatInput.hidden) {
+    newChatButton.classList.add("active");
+    newChatInput.hidden = false;
+  } else {
+    newChatButton.classList.remove("active");
+    newChatInput.hidden = true;
+  }
+});
+
+newChatInput.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") {
+    const name = newChatInput.value.trim();
+    if (!name) return;
+    if (!conversations.has(name)) new Conversation(name);
+    newChatInput.value = "";
+    newChatButton.classList.remove("active");
+    newChatInput.hidden = true;
+  }
 });
 
 messagesDiv.addEventListener("scroll", () => {

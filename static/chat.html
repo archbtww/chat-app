@@ -1,27 +1,35 @@
 <!doctype html>
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="main.css" />
-  <title>Chat</title>
-</head>
-<body>
-  <div id="chatScreen">
-    <div id="leftOfChat">
-      <div id="conversations"></div>
-      <div id="newChat">
-        <input id="newChatInput" placeholder="New chat" />
-        <button id="newChatButton">+</button>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
+    <link rel="stylesheet" href="assets/main.css" />
+    <title>Chat</title>
+  </head>
+  <body>
+    <div id="chatScreen">
+      <div id="leftOfChat">
+        <div id="leftOfChatHeader">
+          <span>Conversations</span>
+        </div>
+        <div id="conversations"></div>
+        <div id="newChat">
+          <button id="newChatButton"></button>
+          <input id="newChatInput" placeholder="New chat" hidden />
+        </div>
+      </div>
+      <div id="chatDiv">
+        <div id="chatDivHeader">
+          <span id="currentChat"></span>
+        </div>
+        <div id="messages"></div>
+        <div id="inputs">
+          <input id="messageInput" placeholder="Message" />
+          <button id="sendButton"></button>
+        </div>
       </div>
     </div>
-    <div id="chatDiv">
-      <p id="currentChat"></p>
-      <div id="messages"></div>
-      <div id="inputs">
-        <input id="messageInput" placeholder="Message" />
-        <button id="sendButton">Send</button>
-      </div>
-    </div>
-  </div>
-  <script src="app.js"></script>
-</body>
+    <script src="app.js"></script>
+  </body>
+</html>
