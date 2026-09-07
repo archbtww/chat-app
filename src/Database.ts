@@ -53,16 +53,26 @@ export class DB {
 
   getConversations(fromUsername: string) {
     const query = this.db.prepare(`
-    SELECT DISTINCT
-      CASE
-        WHEN from_username = ? THEN to_username
-        ELSE from_username
-      END AS to_username
-    FROM messages
-    WHERE from_username = ? OR to_username = ?
+    SELECT id, from_username, to_username, message, timestamp, other_user
+    FROM (
+      SELECT
+        id,
+        from_username,
+        to_username,
+        message,
+        timestamp,
+        CASE WHEN from_username = ? THEN to_username ELSE from_username END AS other_user,
+        ROW_NUMBER() OVER (
+          PARTITION BY CASE WHEN from_username = ? THEN to_username ELSE from_username END
+          ORDER BY timestamp DESC, id DESC
+        ) AS rn
+      FROM messages
+      WHERE from_username = ? OR to_username = ?
+    )
+    WHERE rn = 1
     ORDER BY timestamp DESC
   `);
-    return query.all(fromUsername, fromUsername, fromUsername);
+    return query.all(fromUsername, fromUsername, fromUsername, fromUsername);
   }
 
   getMessages(user1: string, user2: string) {

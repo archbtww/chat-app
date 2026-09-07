@@ -10,14 +10,21 @@ let currentChat;
 const conversations = new Map();
 
 class Conversation {
-  constructor(user) {
+  constructor(user, lastMessage) {
     this.user = user;
 
     this.div = document.createElement("div");
     this.div.hidden = true;
 
     this.btn = document.createElement("button");
-    this.btn.innerText = this.user;
+    this.userSpan = document.createElement("span");
+    this.userSpan.id = "userThumbnail";
+    this.userSpan.innerText = this.user;
+    this.lastMessageSpan = document.createElement("span");
+    this.lastMessageSpan.id = "lastMessageThumbnail";
+    this.lastMessageSpan.innerText = lastMessage;
+    this.btn.appendChild(this.userSpan);
+    this.btn.appendChild(this.lastMessageSpan);
     this.btn.addEventListener("click", () => {
       currentChat?.hide();
       this.show();
@@ -76,7 +83,7 @@ function connectSocket(token, ip) {
     const data = JSON.parse(event.data);
     if (data.type === "conversations") {
       for (let conversation of data.conversations) {
-        new Conversation(conversation);
+        new Conversation(conversation.username, conversation.lastMessage);
       }
     } else {
       for (let message of data) {
@@ -92,6 +99,9 @@ function connectSocket(token, ip) {
         const conversation = conversations.get(user) ?? new Conversation(user);
         if (!conversation.messages.has(message.id)) {
           conversation.messages.add(message.id);
+          conversation.lastMessageSpan.innerText =
+            (message.from_username === username ? "You: " : "") +
+            message.message;
           const bottom = isAtBottom();
           if ((conversation.div.hidden || !bottom) && conversation.read) {
             conversation.read = false;

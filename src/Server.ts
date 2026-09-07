@@ -197,7 +197,14 @@ export class Server {
 
     const conversations = this.db
       .getConversations(username)
-      .map((conversation: any) => conversation.to_username);
+      .map((conversation: any) => ({
+        username: conversation.other_user,
+        lastMessage:
+          conversation.from_username === username
+            ? `You: ${conversation.message}`
+            : conversation.message,
+        timeStamp: conversation.timestamp,
+      }));
 
     ws.send(JSON.stringify({ type: "conversations", conversations }));
   }

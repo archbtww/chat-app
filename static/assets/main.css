@@ -39,7 +39,7 @@ body {
   flex-direction: column;
   min-height: 0;
   overflow-y: auto;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 #conversations button {
@@ -47,10 +47,20 @@ body {
   padding: 10px;
   border: none;
   width: 100%;
+  background: none;
+  flex-direction: column;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
+  gap: 5px;
+  height: 70px;
+  justify-content: center;
+  align-items: start;
 }
 
 #conversations button.active {
-  background: #ccc;
+  background: #ebeff2;
+}
+
+#userThumbnail {
   font-weight: bold;
 }
 
@@ -113,19 +123,23 @@ body {
   display: flex;
 }
 
+.whiteText {
+  color: #fff;
+}
+
 #messages {
   flex: 1;
   overflow-y: auto;
   padding: 10px;
   min-height: 0;
-  background-color: #eee;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+  background-color: #f2f2f2;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 #inputs {
   display: flex;
   flex-direction: row;
-  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.1);
   position: relative;
   z-index: 1;
   border: none;
