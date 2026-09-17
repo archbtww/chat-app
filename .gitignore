@@ -16,3 +16,4 @@ node_modules/
 client/node_modules/
 db.sqlite
 public/dist/
+src/avatars/
