@@ -1,10 +1,25 @@
 import { type ServerWebSocket } from "bun";
 import { DB } from "./Database";
 import { randomUUID } from "crypto";
+import { createCanvas } from "canvas";
+
+const canvas = createCanvas(200, 200);
+const ctx = canvas.getContext("2d");
+
+function randomColor() {
+  return `#${Math.floor(Math.random() * 16777216)
+    .toString(16)
+    .padStart(6, "0")}`;
+}
 
 interface WsData {
   username: string;
   token: string;
+}
+
+interface Credentials {
+  username: string;
+  password: string;
 }
 
 type SocketType = ServerWebSocket<WsData>;
@@ -83,7 +98,7 @@ export class Server {
 
     let reqJson;
     try {
-      reqJson = await req.json();
+      reqJson = (await req.json()) as Credentials;
     } catch (err) {
       return Response.json({ message: "Malformed request" }, { status: 400 });
     }
@@ -105,6 +120,22 @@ export class Server {
       );
     }
 
+    ctx.clearRect(0, 0, 200, 200);
+
+    ctx.fillStyle = randomColor();
+    ctx.fillRect(0, 0, 200, 200);
+
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.font = "120px Impact";
+    ctx.fillStyle = "#000";
+    ctx.fillText(username.charAt(0).toUpperCase(), 100, 100);
+
+    await Bun.write(
+      `src/avatars/${username}.png`,
+      canvas.toBuffer("image/png"),
+    );
+
     const hashedPassword = await Bun.password.hash(password);
 
     this.db.insertUser(username, hashedPassword);
@@ -119,7 +150,7 @@ export class Server {
 
     let reqJson;
     try {
-      reqJson = await req.json();
+      reqJson = (await req.json()) as Credentials;
     } catch (err) {
       return Response.json({ message: "Malformed request" }, { status: 400 });
     }
@@ -172,7 +203,7 @@ export class Server {
 
     let reqJson;
     try {
-      reqJson = await req.json();
+      reqJson = (await req.json()) as Credentials;
     } catch (err) {
       return Response.json({ message: "Malformed request" }, { status: 400 });
     }
@@ -188,23 +219,28 @@ export class Server {
     return Response.json({ message: "Logged out successfully" });
   }
 
-  socketOpen(ws: SocketType) {
+  async socketOpen(ws: SocketType) {
     const username = ws.data.username;
 
     this.sockets.set(username, ws);
 
     console.log(`${username} connected from ${ws.remoteAddress}.`);
 
-    const conversations = this.db
-      .getConversations(username)
-      .map((conversation: any) => ({
+    const conversations = await Promise.all(
+      this.db.getConversations(username).map(async (conversation: any) => ({
         username: conversation.other_user,
+        avatar: Buffer.from(
+          await Bun.file(
+            `src/avatars/${conversation.other_user}.png`,
+          ).arrayBuffer(),
+        ).toString("base64"),
         lastMessage:
           conversation.from_username === username
             ? `You: ${conversation.message}`
             : conversation.message,
         timeStamp: conversation.timestamp,
-      }));
+      })),
+    );
 
     ws.send(JSON.stringify({ type: "conversations", conversations }));
   }

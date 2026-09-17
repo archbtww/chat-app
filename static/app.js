@@ -10,21 +10,30 @@ let currentChat;
 const conversations = new Map();
 
 class Conversation {
-  constructor(user, lastMessage) {
+  constructor(user, avatar, lastMessage) {
     this.user = user;
 
     this.div = document.createElement("div");
     this.div.hidden = true;
 
     this.btn = document.createElement("button");
+
+    this.avatar = document.createElement("img");
+    this.avatar.src = `data:image/png;base64,${avatar}`;
+
     this.userSpan = document.createElement("span");
     this.userSpan.id = "userThumbnail";
     this.userSpan.innerText = this.user;
     this.lastMessageSpan = document.createElement("span");
     this.lastMessageSpan.id = "lastMessageThumbnail";
     this.lastMessageSpan.innerText = lastMessage;
-    this.btn.appendChild(this.userSpan);
-    this.btn.appendChild(this.lastMessageSpan);
+
+    this.rightDiv = document.createElement("div");
+    this.rightDiv.appendChild(this.userSpan);
+    this.rightDiv.appendChild(this.lastMessageSpan);
+
+    this.btn.appendChild(this.avatar);
+    this.btn.appendChild(this.rightDiv);
     this.btn.addEventListener("click", () => {
       currentChat?.hide();
       this.show();
@@ -60,7 +69,6 @@ class Conversation {
 
   markAsRead() {
     if (!this.read) {
-      this.btn.innerText = this.btn.innerText.slice(4);
       this.read = true;
     }
   }
@@ -83,7 +91,12 @@ function connectSocket(token, ip) {
     const data = JSON.parse(event.data);
     if (data.type === "conversations") {
       for (let conversation of data.conversations) {
-        new Conversation(conversation.username, conversation.lastMessage);
+        console.log(conversation);
+        new Conversation(
+          conversation.username,
+          conversation.avatar,
+          conversation.lastMessage,
+        );
       }
     } else {
       for (let message of data) {
@@ -92,20 +105,22 @@ function connectSocket(token, ip) {
           message.from_username === username
             ? message.to_username
             : message.from_username;
-        messageElement.innerText =
-          (message.from_username === username ? "You" : message.from_username) +
-          ": " +
-          message.message;
+
         const conversation = conversations.get(user) ?? new Conversation(user);
         if (!conversation.messages.has(message.id)) {
+          messageElement.classList.add(
+            message.from_username === username
+              ? "outgoingMessage"
+              : "incomingMessage",
+          );
+
+          messageElement.innerText = message.message;
+          conversation.lastMessageSpan.innerText = message.message;
+
           conversation.messages.add(message.id);
-          conversation.lastMessageSpan.innerText =
-            (message.from_username === username ? "You: " : "") +
-            message.message;
           const bottom = isAtBottom();
           if ((conversation.div.hidden || !bottom) && conversation.read) {
             conversation.read = false;
-            conversation.btn.innerText = "* - " + conversation.btn.innerText;
           }
           conversation.div.appendChild(messageElement);
           if (bottom) {
@@ -143,15 +158,15 @@ let newChatButton = document.getElementById("newChatButton");
 let newChatInput = document.getElementById("newChatInput");
 
 document.getElementById("newChatButton").addEventListener("click", () => {
-  if (newChatInput.hidden) {
+  if (!newChatInput.classList.contains("visible")) {
     newChatButton.classList.add("active");
-    newChatInput.hidden = false;
+    newChatInput.classList.add("visible");
+    newChatInput.focus();
   } else {
     newChatButton.classList.remove("active");
-    newChatInput.hidden = true;
+    newChatInput.classList.remove("visible");
   }
 });
-
 newChatInput.addEventListener("keydown", (event) => {
   if (event.key === "Enter") {
     const name = newChatInput.value.trim();
@@ -159,7 +174,7 @@ newChatInput.addEventListener("keydown", (event) => {
     if (!conversations.has(name)) new Conversation(name);
     newChatInput.value = "";
     newChatButton.classList.remove("active");
-    newChatInput.hidden = true;
+    newChatInput.classList.remove("visible");
   }
 });
 
