@@ -1,4 +1,6 @@
-"use strict";
+import ConversationButton from "./components/conversationButton.js";
+
+("use strict");
 
 const username = window.sessionStorage.getItem("username");
 const messagesDiv = document.getElementById("messages");
@@ -16,25 +18,15 @@ class Conversation {
     this.div = document.createElement("div");
     this.div.hidden = true;
 
-    this.btn = document.createElement("button");
+    this.btn = new ConversationButton(
+      user,
+      `data:image/png;base64,${avatar}`,
+      lastMessage,
+    );
 
-    this.avatar = document.createElement("img");
-    this.avatar.src = `data:image/png;base64,${avatar}`;
+    this.btnElement = this.btn.root.querySelector("#conversationButton");
 
-    this.userSpan = document.createElement("span");
-    this.userSpan.id = "userThumbnail";
-    this.userSpan.innerText = this.user;
-    this.lastMessageSpan = document.createElement("span");
-    this.lastMessageSpan.id = "lastMessageThumbnail";
-    this.lastMessageSpan.innerText = lastMessage;
-
-    this.rightDiv = document.createElement("div");
-    this.rightDiv.appendChild(this.userSpan);
-    this.rightDiv.appendChild(this.lastMessageSpan);
-
-    this.btn.appendChild(this.avatar);
-    this.btn.appendChild(this.rightDiv);
-    this.btn.addEventListener("click", () => {
+    this.btnElement.addEventListener("click", () => {
       currentChat?.hide();
       this.show();
       currentChat = this;
@@ -49,7 +41,7 @@ class Conversation {
     this.messages = new Set();
     this.read = true;
 
-    conversationsDiv.appendChild(this.btn);
+    conversationsDiv.appendChild(this.btn.host);
     messagesDiv.appendChild(this.div);
 
     conversations.set(user, this);
@@ -57,12 +49,12 @@ class Conversation {
 
   hide() {
     this.div.hidden = true;
-    this.btn.classList.remove("active");
+    this.btnElement.classList.remove("active");
   }
 
   show() {
     this.div.hidden = false;
-    this.btn.classList.add("active");
+    this.btnElement.classList.add("active");
 
     document.getElementById("currentChat").innerText = this.user;
   }
@@ -91,7 +83,6 @@ function connectSocket(token, ip) {
     const data = JSON.parse(event.data);
     if (data.type === "conversations") {
       for (let conversation of data.conversations) {
-        console.log(conversation);
         new Conversation(
           conversation.username,
           conversation.avatar,
@@ -108,6 +99,14 @@ function connectSocket(token, ip) {
 
         const conversation = conversations.get(user) ?? new Conversation(user);
         if (!conversation.messages.has(message.id)) {
+          if (message.from_username === username) {
+            messageElement.classList.add("outgoingMessage");
+            conversation.btn.lastMessage.innerText = "You: " + message.message;
+          } else {
+            messageElement.classList.add("incomingMessage");
+            conversation.btn.lastMessage.innerText = message.message;
+          }
+
           messageElement.classList.add(
             message.from_username === username
               ? "outgoingMessage"
@@ -115,7 +114,6 @@ function connectSocket(token, ip) {
           );
 
           messageElement.innerText = message.message;
-          conversation.lastMessageSpan.innerText = message.message;
 
           conversation.messages.add(message.id);
           const bottom = isAtBottom();

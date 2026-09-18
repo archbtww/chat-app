@@ -4,8 +4,8 @@
   "type": "module",
   "scripts": {
     "server": "bun run src/index.ts",
-    "watch": "bun run --watch src/index.ts"
-    "clean": "rm db.sqlite && rm src/avatars/*"
+    "watch": "bun run --watch src/index.ts",
+    "clean": "rm db.sqlite && rm -f src/avatars/*"
   },
   "devDependencies": {
     "@types/bun": "^1.4.2"
